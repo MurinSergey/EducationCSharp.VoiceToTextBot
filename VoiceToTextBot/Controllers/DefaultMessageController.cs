@@ -17,7 +17,7 @@ public class DefaultMessageController(ITelegramBotClient telegramClient, ILogger
     /// <param name="cancellationToken"></param>
     public async Task Handle(Message message, CancellationToken cancellationToken)
     {
-        _logger?.LogInformation("От пользователя {UserName} получено не обрабатываемое сообщение: {Type}", message.From?.Username ?? "<Неизвестный>", message.Type);
+        _logger?.LogWarning("От пользователя {UserName} получено не обрабатываемый формат сообщения: {Type}", message.From?.Username ?? "<Неизвестный>", message.Type);
         await telegramClient.SendMessage(
             chatId: message.Chat.Id,
             text: "Получено не обрабатываемое сообщение",

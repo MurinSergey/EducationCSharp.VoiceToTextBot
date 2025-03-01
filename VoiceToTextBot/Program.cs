@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using VoiceToTextBot.Controllers;
 using VoiceToTextBot.Services;
 
 Console.OutputEncoding = Encoding.Unicode;
@@ -37,9 +38,17 @@ static void ConfigureServices(IServiceCollection services, IConfiguration config
 {
     var token = configuration["TelegramToken"];
     
-    //Регистрируем объект TelegramBotClient c токеном подключения
-    services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(token: token));
+    // Регистрируем объект фабрики логгеров (один экземпляр)
     services.AddSingleton(loggerFactory);
+
+    // Регистрируем контроллеры (будут создаваться каждый раз при необходимости)
+    services.AddTransient<DefaultMessageController>();
+    services.AddTransient<TextMessageController>();
+    services.AddTransient<VoiceMessageController>();
+    services.AddTransient<InlineKeyboardController>();
+    
+    //Регистрируем объект TelegramBotClient c токеном подключения (один экземпляр)
+    services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(token: token));
     
     // Регистрируем постоянно активный сервис бота
     services.AddHostedService<TelegramBotService>();

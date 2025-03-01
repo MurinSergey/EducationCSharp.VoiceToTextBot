@@ -3,6 +3,7 @@ using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using VoiceToTextBot.Controllers;
 
 namespace VoiceToTextBot.Services;
 
@@ -14,15 +15,49 @@ internal class TelegramBotService : BackgroundService
     private readonly ITelegramBotClient _telegramClient;
     
     private readonly ILogger<TelegramBotService>? _loggerFactory;
+    
+    /// <summary>
+    /// Контроллер не обработанных сообщений
+    /// </summary>
+    private readonly DefaultMessageController _defaultMessageController;
+    
+    /// <summary>
+    /// Контроллер обработки текста
+    /// </summary>
+    private readonly TextMessageController _textMessageController;
+    
+    /// <summary>
+    /// Контроллер обработки голосовых сообщений
+    /// </summary>
+    private readonly VoiceMessageController _voiceMessageController;
+    
+    /// <summary>
+    /// Контроллер инлайн-клавиатуры
+    /// </summary>
+    private readonly InlineKeyboardController _inlineKeyboardController;
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="telegramClient">Ссылка на внешний объект бота</param>
     /// <param name="loggerFactory"></param>
-    public TelegramBotService(ITelegramBotClient telegramClient, ILoggerFactory loggerFactory)
+    /// <param name="defaultMessageController"></param>
+    /// <param name="textMessageController"></param>
+    /// <param name="voiceMessageController"></param>
+    /// <param name="inlineKeyboardController"></param>
+    public TelegramBotService(
+        ITelegramBotClient telegramClient, 
+        ILoggerFactory loggerFactory, 
+        DefaultMessageController defaultMessageController, 
+        TextMessageController textMessageController, 
+        VoiceMessageController voiceMessageController, 
+        InlineKeyboardController inlineKeyboardController)
     {
         _telegramClient = telegramClient;
+        _defaultMessageController = defaultMessageController;
+        _textMessageController = textMessageController;
+        _voiceMessageController = voiceMessageController;
+        _inlineKeyboardController = inlineKeyboardController;
         _loggerFactory = loggerFactory.CreateLogger<TelegramBotService>();
     }
     
@@ -37,7 +72,7 @@ internal class TelegramBotService : BackgroundService
         _telegramClient.StartReceiving(
             HandleUpdateAsync,
             HandleErrorAsync,
-            new ReceiverOptions() {AllowedUpdates = []},
+            new ReceiverOptions() {AllowedUpdates = []}, // Здесь выбираем, какие обновления хотим получать. В данном случае - разрешены все
             cancellationToken: stoppingToken);
 
         _loggerFactory?.LogInformation("Бот запущен");
@@ -70,24 +105,29 @@ internal class TelegramBotService : BackgroundService
     {
         switch (update)
         {
-            //  Обрабатываем нажатия на кнопки  из Telegram Bot API: https://core.telegram.org/bots/api#callbackquery
-            case { Type: UpdateType.CallbackQuery, CallbackQuery.Message: not null }:
-                await _telegramClient.SendMessage(
-                    chatId: update.CallbackQuery.Message.Chat.Id,
-                    text: "Вы нажали кнопку",
-                    cancellationToken: cancellationToken);
-                _loggerFactory?.LogInformation("Вы нажали кнопку");
-                return;
-            
             // Обрабатываем входящие сообщения из Telegram Bot API: https://core.telegram.org/bots/api#message
             case { Type: UpdateType.Message, Message: not null }:
-                await _telegramClient.SendMessage(
-                    chatId: update.Message.Chat.Id,
-                    text: $"Вы отправили сообщение: {update.Message.Text}",
-                    cancellationToken: cancellationToken);
-                _loggerFactory?.LogInformation("От пользователя {UserName} принято сообщение: {Message}", update.Message.From?.Username ?? "Неизвестный", update.Message.Text);
+                switch (update.Message.Type)
+                {
+                    case MessageType.Text:
+                        await _textMessageController.Handle(update.Message, cancellationToken);
+                        break;
+                    case MessageType.Voice:
+                        await _voiceMessageController.Handle(update.Message, cancellationToken);
+                        break;
+                    default:
+                        await _defaultMessageController.Handle(update.Message, cancellationToken);
+                        break;
+                }
                 return;
+            
+            //  Обрабатываем нажатия на кнопки  из Telegram Bot API: https://core.telegram.org/bots/api#callbackquery
+            case { Type: UpdateType.CallbackQuery}:
+                await _inlineKeyboardController.Handle(update.CallbackQuery, cancellationToken);
+                return;
+            
             default:
+                _loggerFactory?.LogWarning("Необрабатываемый тип сообщения от пользователя: {Type}", update.Type);
                 return;
         }
     }
