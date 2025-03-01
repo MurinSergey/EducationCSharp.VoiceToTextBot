@@ -3,40 +3,44 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Telegram.Bot;
-using VoiceToTextBot.Helper;
-using VoiceToTextBot.Interfaces;
 using VoiceToTextBot.Services;
 
 Console.OutputEncoding = Encoding.Unicode;
 
-var logger = new Logger();
+// Создаем фабрику логерров
+var loggerFactory = LoggerFactory.Create((builder) =>
+{
+    builder.AddConsole(); // Добавляем работу с консолью
+});
+
+// Логгер основной программы
+var mainLogger = loggerFactory.CreateLogger<Program>();
 
 var host = new HostBuilder()
     .ConfigureAppConfiguration((hostContext, config) =>
     {
         config.AddJsonFile("botconfig.json", optional: true, reloadOnChange: true);
     })
-    .ConfigureServices((hostContext, services) => ConfigureServices(services, hostContext.Configuration))
+    .ConfigureServices((hostContext, services) => ConfigureServices(services, hostContext.Configuration, loggerFactory))
     .UseConsoleLifetime()
     .Build();
 
-logger.Event("Сервис запущен");
+mainLogger.LogInformation("Сервис запущен");
 
 await host.RunAsync();
 
-logger.Event("Сервис остановлен");
+mainLogger.LogInformation("Сервис остановлен");
 
 return;
 
-static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+static void ConfigureServices(IServiceCollection services, IConfiguration configuration, ILoggerFactory loggerFactory)
 {
     var token = configuration["TelegramToken"];
     
     //Регистрируем объект TelegramBotClient c токеном подключения
-    services.AddSingleton<ITelegramBotClient>(provider => new TelegramBotClient(token: token));
-
-    services.AddSingleton<ILogger>(new Logger());
+    services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(token: token));
+    services.AddSingleton(loggerFactory);
+    
     // Регистрируем постоянно активный сервис бота
     services.AddHostedService<TelegramBotService>();
 }

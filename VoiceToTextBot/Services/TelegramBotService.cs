@@ -3,7 +3,6 @@ using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using VoiceToTextBot.Interfaces;
 
 namespace VoiceToTextBot.Services;
 
@@ -14,17 +13,17 @@ internal class TelegramBotService : BackgroundService
     /// </summary>
     private readonly ITelegramBotClient _telegramClient;
     
-    private readonly ILogger _logger;
+    private readonly ILogger<TelegramBotService>? _loggerFactory;
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="telegramClient">Ссылка на внешний объект бота</param>
-    /// <param name="logger"></param>
-    public TelegramBotService(ITelegramBotClient telegramClient, ILogger logger)
+    /// <param name="loggerFactory"></param>
+    public TelegramBotService(ITelegramBotClient telegramClient, ILoggerFactory loggerFactory)
     {
         _telegramClient = telegramClient;
-        _logger = logger;
+        _loggerFactory = loggerFactory.CreateLogger<TelegramBotService>();
     }
     
     /// <summary>
@@ -41,7 +40,7 @@ internal class TelegramBotService : BackgroundService
             new ReceiverOptions() {AllowedUpdates = []},
             cancellationToken: stoppingToken);
 
-        _logger.Event("Бот запущен");
+        _loggerFactory?.LogInformation("Бот запущен");
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -50,12 +49,12 @@ internal class TelegramBotService : BackgroundService
             }
             catch (TaskCanceledException ex)
             {
-                _logger.Warning($"Задача была прервана: {ex.Message}");
+                _loggerFactory?.LogWarning("Задача была прервана: {Message}", ex.Message);
             }
             catch (Exception ex)
             {
                 // Выводим сообщение в консоль
-                _logger.Error($"Выполнение задачи: {ex.Message}");
+                _loggerFactory?.LogError("Выполнение задачи: {Message}", ex.Message);
             }
         }
     }
@@ -77,7 +76,7 @@ internal class TelegramBotService : BackgroundService
                     chatId: update.CallbackQuery.Message.Chat.Id,
                     text: "Вы нажали кнопку",
                     cancellationToken: cancellationToken);
-                _logger.Event("Вы нажали кнопку");
+                _loggerFactory?.LogInformation("Вы нажали кнопку");
                 return;
             
             // Обрабатываем входящие сообщения из Telegram Bot API: https://core.telegram.org/bots/api#message
@@ -86,7 +85,7 @@ internal class TelegramBotService : BackgroundService
                     chatId: update.Message.Chat.Id,
                     text: $"Вы отправили сообщение: {update.Message.Text}",
                     cancellationToken: cancellationToken);
-                _logger.Event($"От пользователя {update.Message.From?.Username ?? "Неизвестный"} принято сообщение: {update.Message.Text}");
+                _loggerFactory?.LogInformation("От пользователя {UserName} принято сообщение: {Message}", update.Message.From?.Username ?? "Неизвестный", update.Message.Text);
                 return;
             default:
                 return;
@@ -109,24 +108,24 @@ internal class TelegramBotService : BackgroundService
         };
 
         // Выводим сообщение в консоль
-        _logger.Error(errorMsg);
+        _loggerFactory?.LogError("{Message}", errorMsg);
         
         // Метод await Task.Delay(10000, cancellationToken) используется для создания асинхронной задержки (паузы) в выполнении кода на указанное время (в данном случае — 10 секунд), 
         // с возможностью отмены этой задержки с помощью CancellationToken.
         try
         {
             // Повторное подключение
-            _logger.Event("Повторное подключение");
+            _loggerFactory?.LogInformation("Повторное подключение");
             await Task.Delay(10000, cancellationToken);
         }
         catch (TaskCanceledException ex)
         {
-            _logger.Warning($"Задача была прервана: {ex.Message}");
+            _loggerFactory?.LogWarning("Задача была прервана: {Message}", ex.Message);
         }
         catch (Exception ex)
         {
             // Выводим сообщение в консоль
-            _logger.Error($"Выполнение задачи: {ex.Message}");
+            _loggerFactory?.LogError("Выполнение задачи: {Message}", ex.Message);
         }
     }
 }
