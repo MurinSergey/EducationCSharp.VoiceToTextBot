@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Hosting;
-using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
