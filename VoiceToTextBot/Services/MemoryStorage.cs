@@ -19,13 +19,16 @@ public class MemoryStorage : IStorage
     /// <returns>Искомая сессия</returns>
     public Session GetSession(long chatId)
     {
-        if (_sessions.TryGetValue(chatId, out var session))
-        {
-            return session;
-        }
-        
-        var newSession = new Session(){ LangCode = "ru"};
-        _sessions.TryAdd(chatId, newSession);
-        return newSession;
+        return _sessions.GetOrAdd(chatId, CreateDefaultSession(chatId));
+    }
+
+    /// <summary>
+    /// Создается новая сессия с кодом языка по умолчанию
+    /// </summary>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    private Session CreateDefaultSession(long chatId)
+    {
+        return new Session() { LangCode = "ru" };
     }
 }
