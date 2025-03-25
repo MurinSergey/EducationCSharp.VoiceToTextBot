@@ -3,14 +3,11 @@ using VoiceToTextBot.Models;
 
 namespace VoiceToTextBot.Services;
 
-public class MemoryStorage : IStorage
+public class MemoryStorage(ILoggerFactory loggerFactory) : IStorage
 {
-    private readonly ConcurrentDictionary<long, Session> _sessions;
+    private readonly ConcurrentDictionary<long, Session> _sessions = new();
 
-    public MemoryStorage()
-    {
-        _sessions = new ConcurrentDictionary<long, Session>();
-    }
+    private readonly ILogger<MemoryStorage>? _logger = loggerFactory.CreateLogger<MemoryStorage>();
 
     /// <summary>
     /// Получение сессии по id чата
@@ -19,7 +16,9 @@ public class MemoryStorage : IStorage
     /// <returns>Искомая сессия</returns>
     public Session GetSession(long chatId)
     {
-        return _sessions.GetOrAdd(chatId, CreateDefaultSession(chatId));
+        var session = _sessions.GetOrAdd(chatId, CreateDefaultSession(chatId));
+        _logger?.LogInformation("Сессия для {chat} загружена. Язык: {session}",chatId, session.LangCode);
+        return session;
     }
 
     /// <summary>

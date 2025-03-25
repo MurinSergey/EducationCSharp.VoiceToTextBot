@@ -1,4 +1,6 @@
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using VoiceToTextBot.Services;
 
 namespace VoiceToTextBot.Controllers;
 
@@ -13,7 +15,7 @@ namespace VoiceToTextBot.Controllers;
 /// События от инлайн-клавиатуры
 /// </summary>
 /// <param name="telegramClient">Ссылка на телеграм-бота</param>
-public class InlineKeyboardController(ITelegramBotClient telegramClient, ILoggerFactory loggerFactory)
+public class InlineKeyboardController(ITelegramBotClient telegramClient, IStorage storage, ILoggerFactory loggerFactory)
 {
     private readonly ILogger<InlineKeyboardController>? _logger = loggerFactory.CreateLogger<InlineKeyboardController>();
     
@@ -27,10 +29,22 @@ public class InlineKeyboardController(ITelegramBotClient telegramClient, ILogger
         if (callbackQuery != null)
         {
             _logger?.LogInformation("От пользователя {UserName} получено событие инлайн-кнопки: {Data}", callbackQuery.From.Username ?? "<Неизвестный>", callbackQuery.Data);
+            // Сохраняем выбор языка для текущего чата
+            storage.GetSession(callbackQuery.From.Id).LangCode = callbackQuery.Data;
+            
+            // Создаем сообщение
+            var lang = callbackQuery.Data switch
+            {
+                "ru" => "Русский",
+                "en" => "English",
+                _ => string.Empty
+            };
             
             await telegramClient.SendMessage(
                 chatId: callbackQuery.From.Id,
-                text: $"Кнопка: {callbackQuery.Data}",
+                text: $"<b>Язык аудио - {lang}.</b>{Environment.NewLine}" +
+                        $"{Environment.NewLine}Можно поменять в главном меню.",
+                parseMode: ParseMode.Html,
                 cancellationToken: cancellationToken
             );
             return;

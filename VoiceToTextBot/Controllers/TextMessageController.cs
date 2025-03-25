@@ -27,7 +27,7 @@ public class TextMessageController(ITelegramBotClient telegramClient, ILoggerFac
                 {
                     new []
                     {
-                        InlineKeyboardButton.WithCallbackData($" Русский", $"ru"),
+                        InlineKeyboardButton.WithCallbackData($"Русский", $"ru"),
                         InlineKeyboardButton.WithCallbackData($"English", $"en")
                     }
                 };

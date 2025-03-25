@@ -43,6 +43,9 @@ static void ConfigureServices(IServiceCollection services, IConfiguration config
     // Регистрируем объект фабрики логгеров (один экземпляр)
     services.AddSingleton(loggerFactory);
 
+    // Регистрация хранилища сессии
+    services.AddSingleton<IStorage, MemoryStorage>();
+
     // Регистрируем контроллеры (будут создаваться каждый раз при необходимости)
     services.AddTransient<DefaultMessageController>();
     services.AddTransient<TextMessageController>();
