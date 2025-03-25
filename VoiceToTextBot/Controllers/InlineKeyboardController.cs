@@ -26,11 +26,11 @@ public class InlineKeyboardController(ITelegramBotClient telegramClient, ILogger
     {
         if (callbackQuery != null)
         {
-            _logger?.LogInformation("От пользователя {UserName} получено событие инлайн-кнопки",
-                callbackQuery.From.Username ?? "<Неизвестный>");
+            _logger?.LogInformation("От пользователя {UserName} получено событие инлайн-кнопки: {Data}", callbackQuery.From.Username ?? "<Неизвестный>", callbackQuery.Data);
+            
             await telegramClient.SendMessage(
                 chatId: callbackQuery.From.Id,
-                text: "Получено текстовое сообщение",
+                text: $"Кнопка: {callbackQuery.Data}",
                 cancellationToken: cancellationToken
             );
             return;
