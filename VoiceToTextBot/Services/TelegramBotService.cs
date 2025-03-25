@@ -157,6 +157,7 @@ internal class TelegramBotService : BackgroundService
             // Повторное подключение
             _loggerFactory?.LogInformation("Повторное подключение");
             await Task.Delay(10000, cancellationToken);
+            _loggerFactory?.LogInformation("Готов");
         }
         catch (TaskCanceledException ex)
         {
