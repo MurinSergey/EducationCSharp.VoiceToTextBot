@@ -63,5 +63,11 @@ static void ConfigureServices(IServiceCollection services, IConfiguration config
 // Создает объект с настройками бота 
 static AppSettings BuildAppSettings(IConfiguration configuration)
 {
-    return new AppSettings() { BotToken = configuration["TelegramToken"] };
+    return new AppSettings()
+    {
+        BotToken = configuration["TelegramToken"],
+        DownloadsFolder = configuration["DownloadsFolder"],
+        AudioFileName = configuration["AudioFileName"],
+        AudioFileFormat = configuration["AudioFileFormat"]
+    };
 }
