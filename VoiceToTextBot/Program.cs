@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;using VoiceToTextBot.Configuration;
 using VoiceToTextBot.Controllers;
+using VoiceToTextBot.Extensions;
 using VoiceToTextBot.Services;
 
 Console.OutputEncoding = Encoding.Unicode;
