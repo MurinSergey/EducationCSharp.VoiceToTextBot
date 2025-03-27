@@ -1,4 +1,6 @@
 using Telegram.Bot.Types;
+using VoiceToTextBot.Configuration;
+using VoiceToTextBot.Services;
 
 namespace VoiceToTextBot.Controllers;
 
@@ -6,7 +8,7 @@ namespace VoiceToTextBot.Controllers;
 /// Обработка голосовых сообщений
 /// </summary>
 /// <param name="telegramClient">Ссылка на телеграм-бота</param>
-public class VoiceMessageController(ITelegramBotClient telegramClient, ILoggerFactory loggerFactory)
+public class VoiceMessageController(ITelegramBotClient telegramClient, AppSettings settings, IFileHandler fileHandler, ILoggerFactory loggerFactory)
 {
     private readonly ILogger<VoiceMessageController>? _logger = loggerFactory.CreateLogger<VoiceMessageController>();
 
@@ -17,7 +19,17 @@ public class VoiceMessageController(ITelegramBotClient telegramClient, ILoggerFa
     /// <param name="cancellationToken"></param>
     public async Task Handle(Message message, CancellationToken cancellationToken)
     {
-        _logger?.LogInformation("От пользователя {UserName} получено голосовое сообщение", message.From?.Username ?? "<Неизвестный>");
+        var fileId = message.Voice?.FileId;
+        
+        _logger?.LogInformation("От пользователя {UserName} получено голосовое сообщение {fileID}", message.From?.Username ?? "<Неизвестный>", fileId);
+
+        if (fileId is null)
+        {
+            return;
+        }
+
+        await fileHandler.Download(fileId, cancellationToken);
+        
         await telegramClient.SendMessage(
             chatId: message.Chat.Id,
             text: "Получено голосовое сообщение",

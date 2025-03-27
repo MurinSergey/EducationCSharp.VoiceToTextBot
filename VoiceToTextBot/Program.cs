@@ -47,6 +47,9 @@ static void ConfigureServices(IServiceCollection services, IConfiguration config
     // Регистрация хранилища сессии
     services.AddSingleton<IStorage, MemoryStorage>();
 
+    // Регистрация обработчика голосовых сообщений
+    services.AddSingleton<IFileHandler, AudioFileHandler>();
+
     // Регистрируем контроллеры (будут создаваться каждый раз при необходимости)
     services.AddTransient<DefaultMessageController>();
     services.AddTransient<TextMessageController>();
