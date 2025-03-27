@@ -17,23 +17,61 @@ public class AudioFileHandler(ITelegramBotClient telegramBotClient, AppSettings 
     private readonly ILogger<AudioFileHandler>? _logger = loggerFactory.CreateLogger<AudioFileHandler>(); 
     
     /// <summary>
-    /// Загрузка аудио файлов
+    /// Загрузка голосовых сообщений
     /// </summary>
     /// <param name="fileId"></param>
     /// <param name="ct"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <exception cref="AggregateException"></exception>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task Download(string fileId, CancellationToken ct)
     {
+        // Проверяем входные данные fileID
+        if (string.IsNullOrWhiteSpace(fileId))
+        {
+            _logger?.LogError("Аргумент fileID не может быть пустым");
+            throw new AggregateException("Аргумент fileID не может быть пустым");
+        }
+        
+        // Проверяем конфигурацию
+        if (string.IsNullOrWhiteSpace(settings.DownloadsFolder))
+        {
+            _logger?.LogError("Путь сохранения файлов не задан в конфигурации приложения");
+            throw new InvalidOperationException("Сохранение не возможно, путь сохранения файлов не задан в конфигурации приложения");
+        }
+        
+        // Обрабатываем отмену задания
+        ct.ThrowIfCancellationRequested();
+
+        // Создаем папку сохранения файлов если её нет
+        if (!Directory.Exists(settings.DownloadsFolder))
+        {
+            Directory.CreateDirectory(settings.DownloadsFolder);
+        }
+        
         // Полный путь для загрузки файла
         var downloadPath = Path.Combine(settings.DownloadsFolder,
             $"{fileId}-{settings.AudioFileName}.{settings.AudioFileFormat}");
         
         // Процесс загрузки файла
         await using var audioFileStream = File.Create(downloadPath);
-        _logger?.LogInformation("Загружаем аудио файл в {path}", downloadPath);
-        var fileInfo = await telegramBotClient.GetInfoAndDownloadFile(fileId, audioFileStream, ct);
-        _logger?.LogInformation("Загружен файл {downloadPath} размером {info}", downloadPath, fileInfo.FileSize);
+
+        // Защищенный способ загрузки файлов
+        try
+        {
+            _logger?.LogInformation("Загружаем аудио файл в {path}", downloadPath);
+            var fileInfo = await telegramBotClient.GetInfoAndDownloadFile(fileId, audioFileStream, ct);
+            _logger?.LogInformation("Загружен файл {downloadPath} размером {info}", downloadPath, fileInfo.FileSize);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger?.LogWarning("Загрузка файла {fileId} отменена", fileId);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Ошибка при загрузке файла {fileId}", fileId);
+            throw;
+        }
     }
 
     public string Process(string param)
