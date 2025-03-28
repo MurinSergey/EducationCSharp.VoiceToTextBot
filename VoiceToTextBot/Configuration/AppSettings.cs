@@ -21,4 +21,9 @@ public class AppSettings
     /// Формат аудио файлов
     /// </summary>
     public string AudioFileFormat { get; set; }
+    
+    /// <summary>
+    /// Формат в который необходимо конвертировать файл
+    /// </summary>
+    public string ConvertAudioFormat { get; set; }
 }

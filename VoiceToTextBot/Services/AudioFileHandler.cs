@@ -1,4 +1,5 @@
 using VoiceToTextBot.Configuration;
+using VoiceToTextBot.Utilities;
 
 namespace VoiceToTextBot.Services;
 
@@ -50,7 +51,7 @@ public class AudioFileHandler(ITelegramBotClient telegramBotClient, AppSettings 
         
         // Полный путь для загрузки файла
         var downloadPath = Path.Combine(settings.DownloadsFolder,
-            $"{fileId}-{settings.AudioFileName}.{settings.AudioFileFormat}");
+            $"{settings.AudioFileName}.{settings.AudioFileFormat}");
         
         // Процесс загрузки файла
         await using var audioFileStream = File.Create(downloadPath);
@@ -74,8 +75,22 @@ public class AudioFileHandler(ITelegramBotClient telegramBotClient, AppSettings 
         }
     }
 
+    /// <summary>
+    /// Обработка голосовых сообщений
+    /// </summary>
+    /// <param name="param"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
     public string Process(string param)
     {
-        throw new NotImplementedException();
+        var inputFilePath =
+            Path.Combine(settings.DownloadsFolder, $"{settings.AudioFileName}.{settings.AudioFileFormat}");
+        var outFilePath = Path.Combine(settings.DownloadsFolder,
+            $"{settings.AudioFileName}.{settings.ConvertAudioFormat}");
+        
+        _logger?.LogInformation("Запуск конвертации файла");
+        AudioConverter.TryConvert(inputFilePath, outFilePath);
+        _logger?.LogInformation("Конвертация завершена");
+        return "Конвертация завершена";
     }
 }

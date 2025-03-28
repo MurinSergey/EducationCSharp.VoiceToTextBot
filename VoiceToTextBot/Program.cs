@@ -9,6 +9,8 @@ using VoiceToTextBot.Services;
 
 Console.OutputEncoding = Encoding.Unicode;
 
+Console.WriteLine(DirectoryExtension.GetSolutionRoot());
+
 // Создаем фабрику логерров
 var loggerFactory = LoggerFactory.Create((builder) =>
 {
@@ -71,6 +73,7 @@ static AppSettings BuildAppSettings(IConfiguration configuration)
         BotToken = configuration["TelegramToken"],
         DownloadsFolder = configuration["DownloadsFolder"],
         AudioFileName = configuration["AudioFileName"],
-        AudioFileFormat = configuration["AudioFileFormat"]
+        AudioFileFormat = configuration["AudioFileFormat"],
+        ConvertAudioFormat = configuration["ConvertAudioFormat"]
     };
 }

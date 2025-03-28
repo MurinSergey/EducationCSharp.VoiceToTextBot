@@ -8,7 +8,7 @@ namespace VoiceToTextBot.Controllers;
 /// Обработка голосовых сообщений
 /// </summary>
 /// <param name="telegramClient">Ссылка на телеграм-бота</param>
-public class VoiceMessageController(ITelegramBotClient telegramClient, AppSettings settings, IFileHandler fileHandler, ILoggerFactory loggerFactory)
+public class VoiceMessageController(ITelegramBotClient telegramClient, IStorage storage, IFileHandler fileHandler, ILoggerFactory loggerFactory)
 {
     private readonly ILogger<VoiceMessageController>? _logger = loggerFactory.CreateLogger<VoiceMessageController>();
 
@@ -30,9 +30,17 @@ public class VoiceMessageController(ITelegramBotClient telegramClient, AppSettin
 
         await fileHandler.Download(fileId, cancellationToken);
         
+        
         await telegramClient.SendMessage(
             chatId: message.Chat.Id,
             text: "Получено голосовое сообщение",
+            cancellationToken: cancellationToken
+        );
+        
+        fileHandler.Process(storage.GetSession(message.Chat.Id).LangCode);
+        await telegramClient.SendMessage(
+            chatId: message.Chat.Id,
+            text: "Голосовое сообщение конвертировано в формат wav",
             cancellationToken: cancellationToken
         );
     }
