@@ -14,6 +14,8 @@
 * FFmpeg-win64
 * Speech-models
 
+Скачать файлы можно с google: https://drive.google.com/drive/folders/1fFQoKHLX9u1mTDpPVad_cwtdPdL39BLb?usp=drive_link
+
 ## Настройки
 
     В корне проекта VoiceToTexBot необходимо создать файл botconfig.json и разместить там токен телеграм бота:
