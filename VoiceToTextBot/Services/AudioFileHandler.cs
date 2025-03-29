@@ -78,10 +78,10 @@ public class AudioFileHandler(ITelegramBotClient telegramBotClient, AppSettings 
     /// <summary>
     /// Обработка голосовых сообщений
     /// </summary>
-    /// <param name="param"></param>
+    /// <param name="languageCode"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public string Process(string param)
+    public string Process(string languageCode)
     {
         var inputFilePath =
             Path.Combine(settings.DownloadsFolder, $"{settings.AudioFileName}.{settings.AudioFileFormat}");
@@ -91,6 +91,10 @@ public class AudioFileHandler(ITelegramBotClient telegramBotClient, AppSettings 
         _logger?.LogInformation("Запуск конвертации файла");
         AudioConverter.TryConvert(inputFilePath, outFilePath);
         _logger?.LogInformation("Конвертация завершена");
-        return "Конвертация завершена";
+        
+        _logger?.LogInformation("Начинаем распознавание...");
+        var speechText = SpeechDetector.DetectSpeech(outFilePath, settings.InputAudioBitrate, languageCode);
+        _logger?.LogInformation("Файл распознан.");
+        return speechText;
     }
 }

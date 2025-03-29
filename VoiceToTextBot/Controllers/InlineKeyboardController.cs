@@ -37,6 +37,7 @@ public class InlineKeyboardController(ITelegramBotClient telegramClient, IStorag
             {
                 "ru" => "Русский",
                 "en" => "English",
+                "de" => "German",
                 _ => string.Empty
             };
             

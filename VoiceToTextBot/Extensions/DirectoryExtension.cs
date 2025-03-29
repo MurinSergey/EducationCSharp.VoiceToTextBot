@@ -18,6 +18,6 @@ public static class DirectoryExtension
         
         var projectRoot = projectPath[..^4]; // projectRoot = "C:\Projects\MyApp"
         
-        return Directory.GetParent(projectPath)?.FullName; // return = "C:\Projects"
+        return Directory.GetParent(projectRoot)?.FullName; // return = "C:\Projects"
     }
 }

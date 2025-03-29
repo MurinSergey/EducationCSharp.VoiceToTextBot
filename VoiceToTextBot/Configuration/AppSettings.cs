@@ -26,4 +26,9 @@ public class AppSettings
     /// Формат в который необходимо конвертировать файл
     /// </summary>
     public string ConvertAudioFormat { get; set; }
+    
+    /// <summary>
+    /// Битрейт аудио файла
+    /// </summary>
+    public float InputAudioBitrate { get; set; }
 }

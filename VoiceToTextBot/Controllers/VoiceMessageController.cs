@@ -37,10 +37,10 @@ public class VoiceMessageController(ITelegramBotClient telegramClient, IStorage 
             cancellationToken: cancellationToken
         );
         
-        fileHandler.Process(storage.GetSession(message.Chat.Id).LangCode);
+        var result = fileHandler.Process(storage.GetSession(message.Chat.Id).LangCode);
         await telegramClient.SendMessage(
             chatId: message.Chat.Id,
-            text: "Голосовое сообщение конвертировано в формат wav",
+            text: result,
             cancellationToken: cancellationToken
         );
     }

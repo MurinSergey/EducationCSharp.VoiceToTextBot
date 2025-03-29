@@ -11,6 +11,8 @@ Console.OutputEncoding = Encoding.Unicode;
 
 Console.WriteLine(DirectoryExtension.GetSolutionRoot());
 
+var root = DirectoryExtension.GetSolutionRoot();
+
 // Создаем фабрику логерров
 var loggerFactory = LoggerFactory.Create((builder) =>
 {
@@ -74,6 +76,7 @@ static AppSettings BuildAppSettings(IConfiguration configuration)
         DownloadsFolder = configuration["DownloadsFolder"],
         AudioFileName = configuration["AudioFileName"],
         AudioFileFormat = configuration["AudioFileFormat"],
-        ConvertAudioFormat = configuration["ConvertAudioFormat"]
+        ConvertAudioFormat = configuration["ConvertAudioFormat"],
+        InputAudioBitrate = float.Parse(configuration["InputAudioBitrate"])
     };
 }
