@@ -403,3 +403,5 @@ FodyWeavers.xsd
 # Настройки приложения
 botconfig.*
 
+# Сторонние ресурсы
+.speech-detect

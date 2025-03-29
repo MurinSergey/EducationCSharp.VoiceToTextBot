@@ -10,7 +10,7 @@ public static class SpeechDetector
     public static string DetectSpeech(string audioPath, float inputBitrate, string languageCode)
     {
         Vosk.Vosk.SetLogLevel(-1); // -1 отключает логи, 0 включает логи
-        var modelPath = Path.Combine(DirectoryExtension.GetSolutionRoot(), "Speech-models", $"vosk-model-small-{languageCode.ToLower()}");
+        var modelPath = Path.Combine(DirectoryExtension.GetSolutionRoot(), ".speech-detect", "Speech-models", $"vosk-model-small-{languageCode.ToLower()}");
         Model model = new(modelPath);
         return GetWords(model, audioPath, inputBitrate);
     }
